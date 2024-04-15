@@ -91,7 +91,7 @@ def arg_parse():
     parser.add_argument("--inp_path", type=str, default="/home/choi/desktop/rvc/ai/data/user1/input/music/origin_music.mp3", help="Input path of the audio file")
     parser.add_argument("--save_root_vocal", type=str, default="/home/choi/desktop/rvc/ai/data/user1/output/music", help="Output path for vocal")
     parser.add_argument("--save_root_ins", type=str, default="/home/choi/desktop/rvc/ai/data/user1/output/music", help="Output path for instruments")
-    parser.add_argument("--agg", type=int, default=0, help="Aggregation parameter")
+    parser.add_argument("--agg", type=int, default=10, help="Aggregation parameter")
     parser.add_argument("--format0", type=str, default="wav", help="Output audio format")
     return parser.parse_args()
 
