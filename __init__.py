@@ -1,1 +1,1 @@
-# test
+from infer.modules.train.preprocess import preprocess_trainset

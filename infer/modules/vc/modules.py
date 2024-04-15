@@ -97,10 +97,11 @@ class VC:
                 "",
                 "",
             )
-        person = f'{os.getenv("weight_root")}/{sid}'
-        logger.info(f"Loading: {person}")
+        # person = f'{os.getenv("weight_root")}/{sid}'
+        # logger.info(f"Loading: {person}")
+        logger.info(f"Loading: {sid}")
 
-        self.cpt = torch.load(person, map_location="cpu")
+        self.cpt = torch.load(sid, map_location="cpu")
         self.tgt_sr = self.cpt["config"][-1]
         self.cpt["config"][-3] = self.cpt["weight"]["emb_g.weight"].shape[0]  # n_spk
         self.if_f0 = self.cpt.get("f0", 1)
@@ -178,7 +179,7 @@ class VC:
                     .strip("\n")
                     .strip('"')
                     .strip(" ")
-                    .replace("trained", "added")
+                    # .replace("trained", "added")
                 )
             elif file_index2:
                 file_index = file_index2
