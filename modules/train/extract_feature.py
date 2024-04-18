@@ -1,9 +1,11 @@
-
-
 import os
 import sys
-now_dir = os.getcwd()
-sys.path.append(now_dir)
+# now_dir = os.getcwd()
+# sys.path.append(now_dir)
+
+# Retrieval-based-Voice-Conversion-WebUI 경로를 sys.path에 추가
+project_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(project_path)
 
 import argparse
 import logging
@@ -44,16 +46,16 @@ def if_done_multi(done, ps):
 
 def extract_f0_feature(gpus, n_p, f0method, if_f0, exp_dir, version19, gpus_rmvpe):
     gpus = gpus.split("-")
-    os.makedirs("%s/logs/%s" % (now_dir, exp_dir), exist_ok=True)
-    f = open("%s/logs/%s/extract_f0_feature.log" % (now_dir, exp_dir), "w")
+    os.makedirs(exp_dir, exist_ok=True)
+    f = open("%s/extract_f0_feature.log" % exp_dir, "w")
     f.close()
     if if_f0:
         if f0method != "rmvpe_gpu":
             cmd = (
-                '"%s" infer/modules/train/extract/extract_f0_print.py "%s/logs/%s" %s %s'
+                '"%s" infer/modules/train/extract/extract_f0_print.py "%s" %s %s'
                 % (
                     config.python_cmd,
-                    now_dir,
+                    project_path,
                     exp_dir,
                     n_p,
                     f0method,
@@ -61,7 +63,7 @@ def extract_f0_feature(gpus, n_p, f0method, if_f0, exp_dir, version19, gpus_rmvp
             )
             logger.info("Execute: " + cmd)
             p = Popen(
-                cmd, shell=True, cwd=now_dir
+                cmd, shell=True, cwd=project_path
             )  # , stdin=PIPE, stdout=PIPE,stderr=PIPE
             # 煞笔gr, popen read都非得全跑完了再一次性读取, 不用gr就正常读一句输出一句;只能额外弄出一个文本流定时读
             done = [False]
@@ -79,20 +81,19 @@ def extract_f0_feature(gpus, n_p, f0method, if_f0, exp_dir, version19, gpus_rmvp
                 ps = []
                 for idx, n_g in enumerate(gpus_rmvpe):
                     cmd = (
-                        '"%s" infer/modules/train/extract/extract_f0_rmvpe.py %s %s %s "%s/logs/%s" %s '
+                        '"%s" infer/modules/train/extract/extract_f0_rmvpe.py %s %s %s "%s" %s '
                         % (
                             config.python_cmd,
                             leng,
                             idx,
                             n_g,
-                            now_dir,
                             exp_dir,
                             config.is_half,
                         )
                     )
                     logger.info("Execute: " + cmd)
                     p = Popen(
-                        cmd, shell=True, cwd=now_dir
+                        cmd, shell=True, cwd=project_path
                     )  # , shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, cwd=now_dir
                     ps.append(p)
                 # 煞笔gr, popen read都非得全跑完了再一次性读取, 不用gr就正常读一句输出一句;只能额外弄出一个文本流定时读
@@ -107,27 +108,26 @@ def extract_f0_feature(gpus, n_p, f0method, if_f0, exp_dir, version19, gpus_rmvp
             else:
                 cmd = (
                     config.python_cmd
-                    + ' infer/modules/train/extract/extract_f0_rmvpe_dml.py "%s/logs/%s" '
+                    + ' infer/modules/train/extract/extract_f0_rmvpe_dml.py "%s" '
                     % (
-                        now_dir,
                         exp_dir,
                     )
                 )
                 logger.info("Execute: " + cmd)
                 p = Popen(
-                    cmd, shell=True, cwd=now_dir
+                    cmd, shell=True, cwd=project_path
                 )  # , shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, cwd=now_dir
                 p.wait()
                 done = [True]
         while 1:
             with open(
-                "%s/logs/%s/extract_f0_feature.log" % (now_dir, exp_dir), "r"
+                "%s/extract_f0_feature.log" % (exp_dir), "r"
             ) as f:
                 yield (f.read())
             sleep(1)
             if done[0]:
                 break
-        with open("%s/logs/%s/extract_f0_feature.log" % (now_dir, exp_dir), "r") as f:
+        with open("%s/extract_f0_feature.log" % (exp_dir), "r") as f:
             log = f.read()
         logger.info(log)
         yield log
@@ -143,14 +143,13 @@ def extract_f0_feature(gpus, n_p, f0method, if_f0, exp_dir, version19, gpus_rmvp
     ps = []
     for idx, n_g in enumerate(gpus):
         cmd = (
-            '"%s" infer/modules/train/extract_feature_print.py %s %s %s %s "%s/logs/%s" %s %s'
+            '"%s" infer/modules/train/extract_feature_print.py %s %s %s %s "%s" %s %s'
             % (
                 config.python_cmd,
                 config.device,
                 leng,
                 idx,
                 n_g,
-                now_dir,
                 exp_dir,
                 version19,
                 config.is_half,
@@ -158,7 +157,7 @@ def extract_f0_feature(gpus, n_p, f0method, if_f0, exp_dir, version19, gpus_rmvp
         )
         logger.info("Execute: " + cmd)
         p = Popen(
-            cmd, shell=True, cwd=now_dir
+            cmd, shell=True, cwd=project_path
         )  # , shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, cwd=now_dir
         ps.append(p)
     # 煞笔gr, popen read都非得全跑完了再一次性读取, 不用gr就正常读一句输出一句;只能额外弄出一个文本流定时读
@@ -171,12 +170,12 @@ def extract_f0_feature(gpus, n_p, f0method, if_f0, exp_dir, version19, gpus_rmvp
         ),
     ).start()
     while 1:
-        with open("%s/logs/%s/extract_f0_feature.log" % (now_dir, exp_dir), "r") as f:
+        with open("%s/extract_f0_feature.log" % (exp_dir), "r") as f:
             yield (f.read())
         sleep(1)
         if done[0]:
             break
-    with open("%s/logs/%s/extract_f0_feature.log" % (now_dir, exp_dir), "r") as f:
+    with open("%s/extract_f0_feature.log" % (exp_dir), "r") as f:
         log = f.read()
     logger.info(log)
     yield log
@@ -186,8 +185,8 @@ def arg_parse():
     parser.add_argument('--gpus', type=str, default="0", help='GPU devices to use, separated by "-"')
     parser.add_argument('--n_p', type=int, default=8, help='Number of processes to use')
     parser.add_argument('--f0method', type=str, default="rmvpe_gpu", help='Method for F0 extraction')
-    parser.add_argument('--if_f0_3', type=bool, default=False, help='Boolean to determine if F0 extraction is needed')
-    parser.add_argument('--exp_dir', type=str, default="../../data/user1/output/trained_model", help='Directory for experiment outputs')
+    parser.add_argument('--if_f0_3', type=bool, default=True, help='Boolean to determine if F0 extraction is needed')
+    parser.add_argument('--exp_dir', type=str, default="/home/choi/desktop/rvc/ai/data/user2/output/trained_model", help='Directory for experiment outputs')
     parser.add_argument('--version19', type=str, default="v2", help='Version of the model to use')
     parser.add_argument('--gpus_rmvpe', type=str, default="0-0", help='Specific GPUs for rmvpe method')
     return parser.parse_args()
