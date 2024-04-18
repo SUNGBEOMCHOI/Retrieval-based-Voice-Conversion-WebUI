@@ -9,8 +9,12 @@ import argparse
 from sklearn.cluster import MiniBatchKMeans
 
 # Adding current working directory to path
-now_dir = os.getcwd()
-sys.path.append(now_dir)
+# now_dir = os.getcwd()
+# sys.path.append(now_dir)
+
+# Retrieval-based-Voice-Conversion-WebUI 경로를 sys.path에 추가
+project_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(project_path)
 
 from i18n.i18n import I18nAuto
 from configs.config import Config
@@ -27,8 +31,7 @@ i18n = I18nAuto()
 # Environmental variable
 outside_index_root = os.getenv("outside_index_root")
 
-def train_index(exp_dir1, version19):
-    exp_dir = os.path.join("logs", exp_dir1)
+def train_index(exp_dir, version19):
     os.makedirs(exp_dir, exist_ok=True)
     feature_dir = os.path.join(exp_dir, "3_feature256" if version19 == "v1" else "3_feature768")
     
@@ -88,14 +91,14 @@ def train_index(exp_dir1, version19):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Train an index with specified directory and version.")
-    parser.add_argument("--exp_dir1", type=str, default="../../data/user1/output/trained_model", help="Experiment directory.")
+    parser.add_argument("--exp_dir", type=str, default="/home/choi/desktop/rvc/ai/data/user2/output/trained_model", help="Experiment directory.")
     parser.add_argument("--version19", type=str, default="v2", help="Version specifier.")
     return parser.parse_args()
 
 def main():
     args = parse_args()
     
-    for message in train_index(args.exp_dir1, args.version19):
+    for message in train_index(args.exp_dir, args.version19):
         print(message)
 
 if __name__ == "__main__":
