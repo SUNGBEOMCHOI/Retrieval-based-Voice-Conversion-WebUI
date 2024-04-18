@@ -9,8 +9,12 @@ from random import shuffle
 from time import sleep
 
 # Add the current directory to the system path
-now_dir = os.getcwd()
-sys.path.append(now_dir)
+# now_dir = os.getcwd()
+# sys.path.append(now_dir)
+
+# Retrieval-based-Voice-Conversion-WebUI 경로를 sys.path에 추가
+project_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(project_path)
 
 # Import custom modules and configurations
 from i18n.i18n import I18nAuto
@@ -44,7 +48,7 @@ def click_train(
     version19,
 ):
     # 生成filelist
-    exp_dir = "%s/logs/%s" % (now_dir, exp_dir1)
+    exp_dir = "%s" % (exp_dir1)
     os.makedirs(exp_dir, exist_ok=True)
     gt_wavs_dir = "%s/0_gt_wavs" % (exp_dir)
     feature_dir = (
@@ -98,13 +102,13 @@ def click_train(
         for _ in range(2):
             opt.append(
                 "%s/logs/mute/0_gt_wavs/mute%s.wav|%s/logs/mute/3_feature%s/mute.npy|%s/logs/mute/2a_f0/mute.wav.npy|%s/logs/mute/2b-f0nsf/mute.wav.npy|%s"
-                % (now_dir, sr2, now_dir, fea_dim, now_dir, now_dir, spk_id5)
+                % (project_path, sr2, project_path, fea_dim, project_path, project_path, spk_id5)
             )
     else:
         for _ in range(2):
             opt.append(
                 "%s/logs/mute/0_gt_wavs/mute%s.wav|%s/logs/mute/3_feature%s/mute.npy|%s"
-                % (now_dir, sr2, now_dir, fea_dim, spk_id5)
+                % (project_path, sr2, project_path, fea_dim, spk_id5)
             )
     shuffle(opt)
     with open("%s/filelist.txt" % exp_dir, "w") as f:
@@ -172,22 +176,22 @@ def click_train(
             )
         )
     logger.info("Execute: " + cmd)
-    p = Popen(cmd, shell=True, cwd=now_dir)
+    p = Popen(cmd, shell=True, cwd=project_path)
     p.wait()
     return "训练结束, 您可查看控制台训练日志或实验文件夹下的train.log"
 
 def arg_parse():
     parser = argparse.ArgumentParser(description="Run the training process with specified parameters.")
-    parser.add_argument('--exp_dir', type=str, default="../../data/user1/output/trained_model")
+    parser.add_argument('--exp_dir', type=str, default="/home/choi/desktop/rvc/ai/data/user2/output/trained_model")
     parser.add_argument('--sr', type=str, default="40k")
-    parser.add_argument('--if_f0_3', type=int, choices=[0, 1], default=0)
+    parser.add_argument('--if_f0_3', type=int, choices=[0, 1], default=1)
     parser.add_argument('--spk_id', type=str, default="0")
     parser.add_argument('--save_epoch', type=int, default=5)
     parser.add_argument('--total_epoch', type=int, default=10)
     parser.add_argument('--batch_size', type=int, default=4)
     parser.add_argument('--if_save_latest', type=str, default="아니오")
-    parser.add_argument('--pretrained_G', type=str, default="assets/pretrained_v2/f0G40k.pth")
-    parser.add_argument('--pretrained_D', type=str, default="assets/pretrained_v2/f0D40k.pth")
+    parser.add_argument('--pretrained_G', type=str, default=f"{project_path}/assets/pretrained_v2/f0G40k.pth")
+    parser.add_argument('--pretrained_D', type=str, default=f"{project_path}/assets/pretrained_v2/f0D40k.pth")
     parser.add_argument('--gpus', type=str, default="0")
     parser.add_argument('--if_cache_gpu', type=str, default="아니오")
     parser.add_argument('--if_save_every_weights', type=str, default="아니오")

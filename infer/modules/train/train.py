@@ -4,9 +4,13 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-now_dir = os.getcwd()
-sys.path.append(os.path.join(now_dir))
+# now_dir = os.getcwd()
+# sys.path.append(os.path.join(now_dir))
 
+# Retrieval-based-Voice-Conversion-WebUI 경로를 sys.path에 추가
+project_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.append(project_path)
+ 
 import datetime
 
 from infer.lib.train import utils
