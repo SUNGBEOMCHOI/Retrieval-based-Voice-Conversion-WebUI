@@ -7,8 +7,12 @@ import torch
 import ffmpeg
 
 # Adding current working directory to path
-now_dir = os.getcwd()
-sys.path.append(now_dir)
+# now_dir = os.getcwd()
+# sys.path.append(now_dir)
+
+# Retrieval-based-Voice-Conversion-WebUI 경로를 sys.path에 추가
+project_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(project_path)
 
 from configs.config import Config
 from infer.modules.uvr5.mdxnet import MDXNetDereverb
@@ -21,7 +25,7 @@ logger.setLevel(logging.DEBUG)  # Adjust as necessary
 config = Config()
 
 def initialize_pre_fun(model_name, config, agg):
-    weight_root = os.getenv("weight_uvr5_root", "/home/choi/desktop/rvc/ai/Retrieval-based-Voice-Conversion-WebUI/assets/uvr5_weights")
+    weight_root = os.getenv("weight_uvr5_root", f"{project_path}/assets/uvr5_weights")
     if model_name == "onnx_dereverb_By_FoxJoy":
         return MDXNetDereverb(15, config.device)
     else:
@@ -88,9 +92,9 @@ def clean_up(pre_fun):
 def arg_parse():
     parser = argparse.ArgumentParser(description="Audio processing with UVR model")
     parser.add_argument("--model_name", type=str, default="HP5_only_main_vocal", help="Model name for processing")
-    parser.add_argument("--inp_path", type=str, default="/home/choi/desktop/rvc/ai/data/user1/input/music/origin_music.mp3", help="Input path of the audio file")
-    parser.add_argument("--save_root_vocal", type=str, default="/home/choi/desktop/rvc/ai/data/user1/output/music", help="Output path for vocal")
-    parser.add_argument("--save_root_ins", type=str, default="/home/choi/desktop/rvc/ai/data/user1/output/music", help="Output path for instruments")
+    parser.add_argument("--inp_path", type=str, default="/home/choi/desktop/rvc/ai/data/user2/input/music/origin_music.mp3", help="Input path of the audio file")
+    parser.add_argument("--save_root_vocal", type=str, default="/home/choi/desktop/rvc/ai/data/user2/output/music", help="Output path for vocal")
+    parser.add_argument("--save_root_ins", type=str, default="/home/choi/desktop/rvc/ai/data/user2/output/music", help="Output path for instruments")
     parser.add_argument("--agg", type=int, default=10, help="Aggregation parameter")
     parser.add_argument("--format0", type=str, default="wav", help="Output audio format")
     return parser.parse_args()

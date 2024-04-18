@@ -2,6 +2,8 @@ import os
 
 from fairseq import checkpoint_utils
 
+# Retrieval-based-Voice-Conversion-WebUI 경로
+project_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 def get_index_path_from_model(sid):
     return next(
@@ -21,7 +23,7 @@ def get_index_path_from_model(sid):
 
 def load_hubert(config):
     models, _, _ = checkpoint_utils.load_model_ensemble_and_task(
-        ["assets/hubert/hubert_base.pt"],
+        [f"{project_path}/assets/hubert/hubert_base.pt"],
         suffix="",
     )
     hubert_model = models[0]

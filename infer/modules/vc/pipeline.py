@@ -3,6 +3,9 @@ import sys
 import traceback
 import logging
 
+# Retrieval-based-Voice-Conversion-WebUI 경로를 sys.path에 추가
+project_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
 logger = logging.getLogger(__name__)
 
 from functools import lru_cache
@@ -144,10 +147,10 @@ class Pipeline(object):
                 from infer.lib.rmvpe import RMVPE
 
                 logger.info(
-                    "Loading rmvpe model,%s" % "%s/rmvpe.pt" % os.environ["rmvpe_root"]
+                    "Loading rmvpe model,%s" % "%s/%s/rmvpe.pt" % (project_path, os.environ["rmvpe_root"])
                 )
                 self.model_rmvpe = RMVPE(
-                    "%s/rmvpe.pt" % os.environ["rmvpe_root"],
+                    "%s/%s/rmvpe.pt" % (project_path, os.environ["rmvpe_root"]),
                     is_half=self.is_half,
                     device=self.device,
                 )

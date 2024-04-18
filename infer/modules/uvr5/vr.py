@@ -1,4 +1,5 @@
 import os
+import sys
 import logging
 
 logger = logging.getLogger(__name__)
@@ -7,6 +8,10 @@ import librosa
 import numpy as np
 import soundfile as sf
 import torch
+
+# Retrieval-based-Voice-Conversion-WebUI 경로를 sys.path에 추가
+project_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.append(project_path)
 
 from infer.lib.uvr5_pack.lib_v5 import nets_61968KB as Nets
 from infer.lib.uvr5_pack.lib_v5 import spec_utils
@@ -28,7 +33,7 @@ class AudioPre:
             "agg": agg,
             "high_end_process": "mirroring",
         }
-        mp = ModelParameters("infer/lib/uvr5_pack/lib_v5/modelparams/4band_v2.json")
+        mp = ModelParameters(f"{project_path}/infer/lib/uvr5_pack/lib_v5/modelparams/4band_v2.json")
         model = Nets.CascadedASPPNet(mp.param["bins"] * 2)
         cpk = torch.load(model_path, map_location="cpu")
         model.load_state_dict(cpk)

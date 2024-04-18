@@ -2,8 +2,13 @@ import argparse
 import os
 import sys
 
-now_dir = os.getcwd()
-sys.path.append(now_dir)
+# now_dir = os.getcwd()
+# sys.path.append(now_dir)
+
+# Retrieval-based-Voice-Conversion-WebUI 경로를 sys.path에 추가
+project_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(project_path)
+
 from dotenv import load_dotenv
 from scipy.io import wavfile
 import ffmpeg
@@ -15,11 +20,11 @@ from infer.modules.vc.modules import VC
 def arg_parse() -> tuple:
     parser = argparse.ArgumentParser()
     parser.add_argument("--f0up_key", type=int, default=0)
-    parser.add_argument("--input_path", type=str, help="input path", default="/home/choi/desktop/rvc/ai/data/user1/output/music/vocal_origin_music.mp3_0.wav")
-    parser.add_argument("--index_path", type=str, help="index path", default="/home/choi/desktop/rvc/ai/data/user1/output/trained_model/trained_index.index")
+    parser.add_argument("--input_path", type=str, help="input path", default="/home/choi/desktop/rvc/ai/data/user2/output/music/vocal_origin_music.mp3_10.wav")
+    parser.add_argument("--index_path", type=str, help="index path", default="/home/choi/desktop/rvc/ai/data/user2/output/trained_model/trained_index.index")
     parser.add_argument("--f0method", type=str, default="rmvpe", help="harvest or pm")
-    parser.add_argument("--opt_path", type=str, help="opt path", default="/home/choi/desktop/rvc/ai/data/user1/output/cover/output.wav")
-    parser.add_argument("--model_name", type=str, help="store in assets/weight_root", default="/home/choi/desktop/rvc/ai/data/user1/output/trained_model/trained_voice.pth")
+    parser.add_argument("--opt_path", type=str, help="opt path", default="/home/choi/desktop/rvc/ai/data/user2/output/cover/output.wav")
+    parser.add_argument("--model_name", type=str, help="store in assets/weight_root", default="/home/choi/desktop/rvc/ai/data/user2/output/trained_model/trained_voice.pth")
     parser.add_argument("--index_rate", type=float, default=0.66, help="index rate")
     parser.add_argument("--device", type=str, help="device")
     parser.add_argument("--is_half", type=bool, help="use half -> True")
