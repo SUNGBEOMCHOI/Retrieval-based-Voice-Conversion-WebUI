@@ -20,7 +20,7 @@ from infer.modules.vc.modules import VC
 def arg_parse() -> tuple:
     parser = argparse.ArgumentParser()
     parser.add_argument("--f0up_key", type=int, default=0)
-    parser.add_argument("--input_path", type=str, help="input path", default="/home/choi/desktop/rvc/ai/data/user2/output/music/vocal_origin_music.mp3_10.wav")
+    parser.add_argument("--input_path", type=str, help="input path", default="/home/choi/desktop/rvc/ai/data/user2/output/music/vocal_origin_music.mp3.wav")
     parser.add_argument("--index_path", type=str, help="index path", default="/home/choi/desktop/rvc/ai/data/user2/output/trained_model/trained_index.index")
     parser.add_argument("--f0method", type=str, default="rmvpe", help="harvest or pm")
     parser.add_argument("--opt_path", type=str, help="opt path", default="/home/choi/desktop/rvc/ai/data/user2/output/cover/output.wav")
