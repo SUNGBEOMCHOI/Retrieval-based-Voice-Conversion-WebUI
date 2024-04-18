@@ -180,7 +180,7 @@ def arg_parse():
     parser = argparse.ArgumentParser(description="Run the training process with specified parameters.")
     parser.add_argument('--exp_dir', type=str, default="../../data/user1/output/trained_model")
     parser.add_argument('--sr', type=str, default="40k")
-    parser.add_argument('--if_f0', type=int, choices=[0, 1], default=1)
+    parser.add_argument('--if_f0_3', type=int, choices=[0, 1], default=0)
     parser.add_argument('--spk_id', type=str, default="0")
     parser.add_argument('--save_epoch', type=int, default=5)
     parser.add_argument('--total_epoch', type=int, default=10)
@@ -199,7 +199,7 @@ def main():
     result = click_train(
         exp_dir1=args.exp_dir,
         sr2=args.sr,
-        if_f0_3=args.if_f0,
+        if_f0_3=args.if_f0_3,
         spk_id5=args.spk_id,
         save_epoch10=args.save_epoch,
         total_epoch11=args.total_epoch,

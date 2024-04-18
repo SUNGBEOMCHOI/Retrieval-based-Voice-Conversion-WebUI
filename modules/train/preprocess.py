@@ -7,8 +7,12 @@ from subprocess import Popen
 import threading
 
 # Directory setup
-now_dir = os.getcwd()
-sys.path.append(now_dir)
+# now_dir = os.getcwd()
+# sys.path.append(now_dir)
+
+# Retrieval-based-Voice-Conversion-WebUI 경로를 sys.path에 추가
+project_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(project_path)
 
 from configs.config import Config
 
@@ -35,11 +39,14 @@ def preprocess_dataset(trainset_dir, exp_dir, sr, n_p):
     os.makedirs(trainset_dir, exist_ok=True)
     
     sr = sr_dict[sr]
-    log_dir = f"{now_dir}/logs/{exp_dir}"
-    os.makedirs(log_dir, exist_ok=True)
-    log_path = f"{log_dir}/preprocess.log"
+    os.makedirs(exp_dir, exist_ok=True)
+    log_file = f"{exp_dir}/preprocess.log"
+    f = open(log_file, "a+")
+    f.close()
+
+
     
-    cmd = f'"{config.python_cmd}" infer/modules/train/preprocess.py "{trainset_dir}" {sr} {n_p} "{log_dir}" {config.noparallel} {config.preprocess_per}'
+    cmd = f'"{config.python_cmd}" {project_path}/infer/modules/train/preprocess.py "{trainset_dir}" {sr} {n_p} "{exp_dir}" {config.noparallel} {config.preprocess_per}'
     logger.info("Execute: " + cmd)
     p = Popen(cmd, shell=True)
     done = [False]
@@ -47,9 +54,9 @@ def preprocess_dataset(trainset_dir, exp_dir, sr, n_p):
 
 def arg_parse():
     parser = argparse.ArgumentParser(description="Preprocess audio data for training.")
-    parser.add_argument('--trainset_dir', type=str, default="/home/choi/desktop/rvc/ai/data/user1/input/speaker",
+    parser.add_argument('--trainset_dir', type=str, default="/home/choi/desktop/rvc/ai/data/user2/input/speaker",
                         help="Directory where the training dataset is stored")
-    parser.add_argument('--exp_dir', type=str, default="../../data/user1/output/trained_model",
+    parser.add_argument('--exp_dir', type=str, default="/home/choi/desktop/rvc/ai/data/user2/output/trained_model",
                         help="Directory where the experiment's outputs are saved")
     parser.add_argument('--sampling_rate', type=str, choices=['32k', '40k', '48k'], default="40k",
                         help="Sampling rate for the audio processing")

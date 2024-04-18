@@ -186,7 +186,7 @@ def arg_parse():
     parser.add_argument('--gpus', type=str, default="0", help='GPU devices to use, separated by "-"')
     parser.add_argument('--n_p', type=int, default=8, help='Number of processes to use')
     parser.add_argument('--f0method', type=str, default="rmvpe_gpu", help='Method for F0 extraction')
-    parser.add_argument('--if_f0', type=bool, default=True, help='Boolean to determine if F0 extraction is needed')
+    parser.add_argument('--if_f0_3', type=bool, default=False, help='Boolean to determine if F0 extraction is needed')
     parser.add_argument('--exp_dir', type=str, default="../../data/user1/output/trained_model", help='Directory for experiment outputs')
     parser.add_argument('--version19', type=str, default="v2", help='Version of the model to use')
     parser.add_argument('--gpus_rmvpe', type=str, default="0-0", help='Specific GPUs for rmvpe method')
@@ -194,7 +194,7 @@ def arg_parse():
 
 def main():
     args = arg_parse()
-    for log in extract_f0_feature(args.gpus, args.n_p, args.f0method, args.if_f0, args.exp_dir, args.version19, args.gpus_rmvpe):
+    for log in extract_f0_feature(args.gpus, args.n_p, args.f0method, args.if_f0_3, args.exp_dir, args.version19, args.gpus_rmvpe):
         print(log)
 
 if __name__ == "__main__":

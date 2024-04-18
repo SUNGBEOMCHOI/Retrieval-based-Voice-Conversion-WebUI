@@ -4,8 +4,10 @@ import sys
 
 from scipy import signal
 
-now_dir = os.getcwd()
-sys.path.append(now_dir)
+# Retrieval-based-Voice-Conversion-WebUI 경로를 sys.path에 추가
+project_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.append(project_path)
+
 print(*sys.argv[1:])
 inp_root = sys.argv[1]
 sr = int(sys.argv[2])
@@ -52,6 +54,8 @@ class PreProcess:
         self.exp_dir = exp_dir
         self.gt_wavs_dir = "%s/0_gt_wavs" % exp_dir
         self.wavs16k_dir = "%s/1_16k_wavs" % exp_dir
+        print("exp_dir", self.exp_dir)
+        print(self.gt_wavs_dir)
         os.makedirs(self.exp_dir, exist_ok=True)
         os.makedirs(self.gt_wavs_dir, exist_ok=True)
         os.makedirs(self.wavs16k_dir, exist_ok=True)

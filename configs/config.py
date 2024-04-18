@@ -29,6 +29,7 @@ version_config_list = [
     "v2/32k.json",
 ]
 
+project_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def singleton_variable(func):
     def wrapper(*args, **kwargs):
@@ -66,10 +67,10 @@ class Config:
     def load_config_json() -> dict:
         d = {}
         for config_file in version_config_list:
-            p = f"configs/inuse/{config_file}"
+            p = f"{project_path}/configs/inuse/{config_file}"
             if not os.path.exists(p):
-                shutil.copy(f"configs/{config_file}", p)
-            with open(f"configs/inuse/{config_file}", "r") as f:
+                shutil.copy(f"{project_path}/configs/{config_file}", p)
+            with open(f"{project_path}/configs/inuse/{config_file}", "r") as f:
                 d[config_file] = json.load(f)
         return d
 
