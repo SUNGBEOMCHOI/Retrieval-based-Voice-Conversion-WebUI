@@ -38,10 +38,8 @@ def arg_parse() -> tuple:
 
     return args
 
-
-def main():
+def main(args):
     load_dotenv()
-    args = arg_parse()
     config = Config()
     config.device = args.device if args.device else config.device
     config.is_half = args.is_half if args.is_half else config.is_half
@@ -66,4 +64,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    args = arg_parse()
+    main(args)

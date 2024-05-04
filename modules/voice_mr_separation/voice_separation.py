@@ -22,9 +22,8 @@ from infer.modules.uvr5.vr import AudioPre, AudioPreDeEcho
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)  # Adjust as necessary
 
-config = Config()
-
-def initialize_pre_fun(model_name, config, agg):
+def initialize_voice_separation_model(model_name, agg):
+    config = Config()
     weight_root = os.getenv("weight_uvr5_root", f"{project_path}/assets/uvr5_weights")
     if model_name == "onnx_dereverb_By_FoxJoy":
         return MDXNetDereverb(15, config.device)
@@ -37,51 +36,43 @@ def initialize_pre_fun(model_name, config, agg):
             is_half=config.is_half,
         )
 
-def uvr(model_name, inp_path, save_root_vocal, paths, save_root_ins, agg, format0):
+def uvr(model, inp_path, save_root_vocal, save_root_ins, agg, format0):
     os.makedirs(save_root_vocal, exist_ok=True)
     os.makedirs(save_root_ins, exist_ok=True)
 
     infos = []
-    pre_fun = None
+    need_reformat = 1
+    done = 0
     try:
-        pre_fun = initialize_pre_fun(model_name, config, agg)
-        need_reformat = 1
-        done = 0
-        try:
-            info = ffmpeg.probe(inp_path, cmd="ffprobe")
-            if info["streams"][0]["channels"] == 2 and info["streams"][0]["sample_rate"] == "44100":
-                need_reformat = 0
-                pre_fun._path_audio_(inp_path, save_root_ins, save_root_vocal, format0)
-                done = 1
-        except Exception as e:
-            infos.append(f"Error in probing the file: {str(e)}")
-            traceback.print_exc()
-
-        if need_reformat == 1:
-            tmp_path = f"{os.environ.get('TEMP', '/tmp')}/{os.path.basename(inp_path)}.reformatted.wav"
-            os.system(f"ffmpeg -i {inp_path} -vn -acodec pcm_s16le -ac 2 -ar 44100 {tmp_path} -y")
-            inp_path = tmp_path
-
-        if done == 0:
-            pre_fun._path_audio_(inp_path, save_root_ins, save_root_vocal, format0)
-            infos.append(f"{os.path.basename(inp_path)}->Success")
-        else:
-            infos.append("No reformat needed and processing completed.")
-
+        info = ffmpeg.probe(inp_path, cmd="ffprobe")
+        if info["streams"][0]["channels"] == 2 and info["streams"][0]["sample_rate"] == "44100":
+            need_reformat = 0
+            model._path_audio_(inp_path, save_root_ins, save_root_vocal, format0)
+            done = 1
     except Exception as e:
-        infos.append(f"Exception during audio processing: {str(e)}")
+        infos.append(f"Error in probing the file: {str(e)}")
         traceback.print_exc()
-    finally:
-        clean_up(pre_fun)
+
+    if need_reformat == 1:
+        tmp_path = f"{os.environ.get('TEMP', '/tmp')}/{os.path.basename(inp_path)}.reformatted.wav"
+        os.system(f"ffmpeg -i {inp_path} -vn -acodec pcm_s16le -ac 2 -ar 44100 {tmp_path} -y")
+        inp_path = tmp_path
+
+    if done == 0:
+        model._path_audio_(inp_path, save_root_ins, save_root_vocal, format0)
+        infos.append(f"{os.path.basename(inp_path)}->Success")
+    else:
+        infos.append("No reformat needed and processing completed.")
+        
     return "\n".join(infos)
 
-def clean_up(pre_fun):
+def clean_up(model):
     try:
-        if pre_fun:
-            if hasattr(pre_fun, 'model'):
-                del pre_fun.model
-            if hasattr(pre_fun, 'pred') and hasattr(pre_fun.pred, 'model'):
-                del pre_fun.pred.model
+        if model:
+            if hasattr(model, 'model'):
+                del model.model
+            if hasattr(model, 'pred') and hasattr(model.pred, 'model'):
+                del model.pred.model
     except Exception as e:
         logger.error(f"Failed to clean up resources: {str(e)}")
         traceback.print_exc()
@@ -101,8 +92,14 @@ def arg_parse():
 
 def main():
     args = arg_parse()
-    result = uvr(args.model_name, args.inp_path, args.save_root_vocal, [], args.save_root_ins, args.agg, args.format0)
-    print(result)
+    model = initialize_voice_separation_model(args)
+    try:
+        uvr(model, args.inp_path, args.save_root_vocal, args.save_root_ins, args.agg, args.format0)
+    except Exception as e:
+        logger.error(f"Failed to process audio: {str(e)}")
+        traceback.print_exc()
+    finally:
+        clean_up(model)
 
 if __name__ == "__main__":
     main()

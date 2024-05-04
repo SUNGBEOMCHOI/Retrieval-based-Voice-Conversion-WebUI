@@ -11,9 +11,7 @@ def arg_parse():
     args = parser.parse_args()
     return args
 
-def main():
-    args = arg_parse()
-
+def main(args):
     # Load vocal and instrument audio
     vocal = AudioSegment.from_file(args.vocal_path)
     instrument = AudioSegment.from_file(args.instrument_path)
@@ -25,4 +23,5 @@ def main():
     mixed.export(args.output_path, format='wav')
 
 if __name__ == "__main__":
-    main()
+    args = arg_parse()
+    main(args)
