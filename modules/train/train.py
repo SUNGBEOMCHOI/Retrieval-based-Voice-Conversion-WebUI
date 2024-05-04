@@ -27,11 +27,11 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 # Set up a logger for this module
 logger = logging.getLogger(__name__)
 
-# Initialize configuration and internationalization
-config = Config()
-i18n = I18nAuto()
-
 def click_train(exp_dir1, args):    
+    # Initialize configuration and internationalization
+    config = Config()
+    i18n = I18nAuto()
+    
     sr2=args.get("sampling_rate", "40k")
     if_f0_3=args.get("if_f0_3", True)
     spk_id5=args.get("spk_id", "0")

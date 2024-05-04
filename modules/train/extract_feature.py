@@ -20,7 +20,6 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
-config = Config()
 
 def if_done(done, p):
     while 1:
@@ -51,6 +50,8 @@ def extract_f0_feature(exp_dir, args):
     if_f0 = args.get("if_f0_3", True)
     version19 = args.get("version19", "v2")
     gpus_rmvpe = args.get("gpus_rmvpe", "0-0")
+
+    config = Config()
 
     gpus = gpus.split("-")
     os.makedirs(exp_dir, exist_ok=True)

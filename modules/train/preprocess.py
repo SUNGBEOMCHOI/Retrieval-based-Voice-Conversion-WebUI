@@ -29,13 +29,13 @@ sr_dict = {
 }
 
 # Configuration from external file
-config = Config()
 
 def if_done(done, p):
     p.wait()
     done[0] = True
 
 def preprocess_dataset(trainset_dir, exp_dir, preprocess_args):
+    config = Config()
     sr = preprocess_args.get("sampling_rate", "40k") 
     n_p = preprocess_args.get("n_p", 8)
     os.makedirs(trainset_dir, exist_ok=True)

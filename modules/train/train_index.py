@@ -24,14 +24,14 @@ logging.getLogger("numba").setLevel(logging.WARNING)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
-# Configuration and internationalization
-config = Config()
-i18n = I18nAuto()
-
 # Environmental variable
 outside_index_root = os.getenv("outside_index_root")
 
 def train_index(exp_dir, args):
+    # Configuration and internationalization
+    config = Config()
+    i18n = I18nAuto()
+    
     version19 = args.get("version19", "v2")
     os.makedirs(exp_dir, exist_ok=True)
     feature_dir = os.path.join(exp_dir, "3_feature256" if version19 == "v1" else "3_feature768")

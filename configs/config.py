@@ -51,14 +51,15 @@ class Config:
         self.gpu_name = None
         self.json_config = self.load_config_json()
         self.gpu_mem = None
-        (
-            self.python_cmd,
-            self.listen_port,
-            self.iscolab,
-            self.noparallel,
-            self.noautoopen,
-            self.dml,
-        ) = self.arg_parse()
+        # (
+        #     self.python_cmd,
+        #     self.listen_port,
+        #     self.iscolab,
+        #     self.noparallel,
+        #     self.noautoopen,
+        #     self.dml,
+        # ) = self.arg_parse()
+        self.initialize_args()
         self.instead = ""
         self.preprocess_per = 3.7
         self.x_pad, self.x_query, self.x_center, self.x_max = self.device_config()
@@ -106,6 +107,14 @@ class Config:
             cmd_opts.noautoopen,
             cmd_opts.dml,
         )
+    
+    def initialize_args(self):
+        self.pycmd = sys.executable or "python"
+        self.port = 7865
+        self.colab = False
+        self.noparallel = False
+        self.noautoopen = False
+        self.dml = False
 
     # has_mps is only available in nightly pytorch (for now) and MasOS 12.3+.
     # check `getattr` and try it for compatibility
