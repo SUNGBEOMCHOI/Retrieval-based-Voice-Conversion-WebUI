@@ -35,7 +35,9 @@ def if_done(done, p):
     p.wait()
     done[0] = True
 
-def preprocess_dataset(trainset_dir, exp_dir, sr, n_p):
+def preprocess_dataset(trainset_dir, exp_dir, preprocess_args):
+    sr = preprocess_args.get("sampling_rate", "40k") 
+    n_p = preprocess_args.get("n_p", 8)
     os.makedirs(trainset_dir, exist_ok=True)
     
     sr = sr_dict[sr]
@@ -44,13 +46,14 @@ def preprocess_dataset(trainset_dir, exp_dir, sr, n_p):
     f = open(log_file, "a+")
     f.close()
 
-
-    
     cmd = f'"{config.python_cmd}" {project_path}/infer/modules/train/preprocess.py "{trainset_dir}" {sr} {n_p} "{exp_dir}" {config.noparallel} {config.preprocess_per}'
     logger.info("Execute: " + cmd)
     p = Popen(cmd, shell=True)
     done = [False]
     threading.Thread(target=if_done, args=(done, p)).start()
+
+    while not done[0]:  # 이 라인을 추가하여 프로세스가 완료될 때까지 대기
+        sleep(1)  # CPU를 바로 소비하지 않도록 잠시 대기
 
 def arg_parse():
     parser = argparse.ArgumentParser(description="Preprocess audio data for training.")
@@ -66,7 +69,7 @@ def arg_parse():
 
 def main():
     args = arg_parse()
-    preprocess_dataset(args.trainset_dir, args.exp_dir, args.sampling_rate, args.n_p)
+    preprocess_dataset(args.trainset_dir, args.exp_dir, vars(args))
 
 if __name__ == "__main__":
     main()

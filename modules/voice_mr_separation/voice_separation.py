@@ -21,7 +21,12 @@ from infer.modules.uvr5.vr import AudioPre, AudioPreDeEcho
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)  # Adjust as necessary
 
-def initialize_voice_separation_model(model_name, agg, device, is_half):
+def initialize_voice_separation_model(voice_separation_args):
+    model_name = voice_separation_args.get('model_name', 'HP5_only_main_vocal')
+    agg = voice_separation_args.get('agg', 10)
+    device = voice_separation_args.get('device', 'cuda:0')
+    is_half = voice_separation_args.get('is_half', False)
+
     weight_root = os.getenv("weight_uvr5_root", f"{project_path}/assets/uvr5_weights")
     if model_name == "onnx_dereverb_By_FoxJoy":
         return MDXNetDereverb(15, device)
@@ -34,7 +39,8 @@ def initialize_voice_separation_model(model_name, agg, device, is_half):
             is_half=is_half,
         )
 
-def uvr(model, inp_path, save_root_vocal, save_root_ins, agg, format0):
+def uvr(model, inp_path, save_root_vocal, save_root_ins, args):
+    format0 = args.get("format", "wav")
     os.makedirs(save_root_vocal, exist_ok=True)
     os.makedirs(save_root_ins, exist_ok=True)
 
@@ -45,7 +51,7 @@ def uvr(model, inp_path, save_root_vocal, save_root_ins, agg, format0):
         info = ffmpeg.probe(inp_path, cmd="ffprobe")
         if info["streams"][0]["channels"] == 2 and info["streams"][0]["sample_rate"] == "44100":
             need_reformat = 0
-            model._path_audio_(inp_path, save_root_ins, save_root_vocal, format0)
+            vocal_path, instrument_path = model._path_audio_(inp_path, save_root_ins, save_root_vocal, format0)
             done = 1
     except Exception as e:
         infos.append(f"Error in probing the file: {str(e)}")
@@ -57,12 +63,13 @@ def uvr(model, inp_path, save_root_vocal, save_root_ins, agg, format0):
         inp_path = tmp_path
 
     if done == 0:
-        model._path_audio_(inp_path, save_root_ins, save_root_vocal, format0)
+        vocal_path, instrument_path = model._path_audio_(inp_path, save_root_ins, save_root_vocal, format0)
         infos.append(f"{os.path.basename(inp_path)}->Success")
     else:
         infos.append("No reformat needed and processing completed.")
         
-    return "\n".join(infos)
+    print("\n".join(infos))
+    return vocal_path, instrument_path
 
 def clean_up(model):
     try:
@@ -85,22 +92,22 @@ def arg_parse():
     parser.add_argument("--save_root_vocal", type=str, default="/home/choi/desktop/rvc/ai/data/user2/output/music", help="Output path for vocal")
     parser.add_argument("--save_root_ins", type=str, default="/home/choi/desktop/rvc/ai/data/user2/output/music", help="Output path for instruments")
     parser.add_argument("--agg", type=int, default=10, help="Aggregation parameter")
-    parser.add_argument("--format0", type=str, default="wav", help="Output audio format")
+    parser.add_argument("--format", type=str, default="wav", help="Output audio format")
     parser.add_argument("--device", type=str, default="cuda:0", help="Device for processing")
     parser.add_argument("--is_half", type=bool, default=False, help="Use half precision")
     return parser.parse_args()
 
 def main():
     args = arg_parse()
-    model_name, agg, device, is_half = args.model_name, args.agg, args.device, args.is_half
-    model = initialize_voice_separation_model(model_name, agg, device, is_half)
+    model = initialize_voice_separation_model(vars(args))
     try:
-        uvr(model, args.inp_path, args.save_root_vocal, args.save_root_ins, args.agg, args.format0)
+        vocal_path, instrument_path = uvr(model, args.inp_path, args.save_root_vocal, args.save_root_ins, vars(args))
     except Exception as e:
         logger.error(f"Failed to process audio: {str(e)}")
         traceback.print_exc()
     finally:
         clean_up(model)
+    print(f"Vocal path: {vocal_path}\nInstrument path: {instrument_path}")
 
 if __name__ == "__main__":
     main()

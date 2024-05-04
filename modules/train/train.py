@@ -31,23 +31,21 @@ logger = logging.getLogger(__name__)
 config = Config()
 i18n = I18nAuto()
 
-def click_train(
-    exp_dir1,
-    sr2,
-    if_f0_3,
-    spk_id5,
-    save_epoch10,
-    total_epoch11,
-    batch_size12,
-    if_save_latest13,
-    pretrained_G14,
-    pretrained_D15,
-    gpus16,
-    if_cache_gpu17,
-    if_save_every_weights18,
-    version19,
-):
-    # 生成filelist
+def click_train(exp_dir1, args):    
+    sr2=args.get("sampling_rate", "40k")
+    if_f0_3=args.get("if_f0_3", True)
+    spk_id5=args.get("spk_id", "0")
+    save_epoch10=args.get("save_epoch", 5)
+    total_epoch11=args.get("total_epoch", 10)
+    batch_size12=args.get("batch_size", 4)
+    if_save_latest13=args.get("if_save_latest", "아니오")
+    pretrained_G14=args.get("pretrained_G", f"{project_path}/assets/pretrained_v2/f0G40k.pth")
+    pretrained_D15=args.get("pretrained_D", f"{project_path}/assets/pretrained_v2/f0D40k.pth")
+    gpus16=args.get("gpus", "0")
+    if_cache_gpu17=args.get("if_cache_gpu", "아니오")
+    if_save_every_weights18=args.get("if_save_every_weights", "아니오")
+    version19=args.get("version", "v2")
+
     exp_dir = "%s" % (exp_dir1)
     os.makedirs(exp_dir, exist_ok=True)
     gt_wavs_dir = "%s/0_gt_wavs" % (exp_dir)
@@ -178,13 +176,14 @@ def click_train(
     logger.info("Execute: " + cmd)
     p = Popen(cmd, shell=True, cwd=project_path)
     p.wait()
-    return "训练结束, 您可查看控制台训练日志或实验文件夹下的train.log"
+    trained_voice_path = os.path.join(exp_dir, "trained_voice.pth")
+    return trained_voice_path
 
 def arg_parse():
     parser = argparse.ArgumentParser(description="Run the training process with specified parameters.")
     parser.add_argument('--exp_dir', type=str, default="/home/choi/desktop/rvc/ai/data/user2/output/trained_model")
-    parser.add_argument('--sr', type=str, default="40k")
-    parser.add_argument('--if_f0_3', type=int, choices=[0, 1], default=1)
+    parser.add_argument('--sampling_rate', type=str, default="40k")
+    parser.add_argument('--if_f0_3', type=bool, default=True)
     parser.add_argument('--spk_id', type=str, default="0")
     parser.add_argument('--save_epoch', type=int, default=5)
     parser.add_argument('--total_epoch', type=int, default=10)
@@ -200,23 +199,8 @@ def arg_parse():
 
 def main():
     args = arg_parse()
-    result = click_train(
-        exp_dir1=args.exp_dir,
-        sr2=args.sr,
-        if_f0_3=args.if_f0_3,
-        spk_id5=args.spk_id,
-        save_epoch10=args.save_epoch,
-        total_epoch11=args.total_epoch,
-        batch_size12=args.batch_size,
-        if_save_latest13=args.if_save_latest,
-        pretrained_G14=args.pretrained_G,
-        pretrained_D15=args.pretrained_D,
-        gpus16=args.gpus,
-        if_cache_gpu17=args.if_cache_gpu,
-        if_save_every_weights18=args.if_save_every_weights,
-        version19=args.version,
-    )
-    print(result)
+    trained_voice_path = click_train(exp_dir1=args.exp_dir, args=vars(args))
+    print(trained_voice_path)
 
 if __name__ == "__main__":
     main()

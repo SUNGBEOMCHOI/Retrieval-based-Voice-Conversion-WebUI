@@ -44,7 +44,14 @@ def if_done_multi(done, ps):
             break
     done[0] = True
 
-def extract_f0_feature(gpus, n_p, f0method, if_f0, exp_dir, version19, gpus_rmvpe):
+def extract_f0_feature(exp_dir, args):
+    gpus = str(args.get("gpus", "0"))
+    n_p = args.get("n_p", 8)
+    f0method = args.get("f0method", "rmvpe_gpu")
+    if_f0 = args.get("if_f0_3", True)
+    version19 = args.get("version19", "v2")
+    gpus_rmvpe = args.get("gpus_rmvpe", "0-0")
+
     gpus = gpus.split("-")
     os.makedirs(exp_dir, exist_ok=True)
     f = open("%s/extract_f0_feature.log" % exp_dir, "w")
@@ -119,18 +126,8 @@ def extract_f0_feature(gpus, n_p, f0method, if_f0, exp_dir, version19, gpus_rmvp
                 )  # , shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, cwd=now_dir
                 p.wait()
                 done = [True]
-        while 1:
-            with open(
-                "%s/extract_f0_feature.log" % (exp_dir), "r"
-            ) as f:
-                yield (f.read())
-            sleep(1)
-            if done[0]:
-                break
-        with open("%s/extract_f0_feature.log" % (exp_dir), "r") as f:
-            log = f.read()
-        logger.info(log)
-        yield log
+    while not done[0]: 
+        sleep(1)
     # 对不同part分别开多进程
     """
     n_part=int(sys.argv[1])
@@ -169,16 +166,9 @@ def extract_f0_feature(gpus, n_p, f0method, if_f0, exp_dir, version19, gpus_rmvp
             ps,
         ),
     ).start()
-    while 1:
-        with open("%s/extract_f0_feature.log" % (exp_dir), "r") as f:
-            yield (f.read())
+    while not done[0]: 
         sleep(1)
-        if done[0]:
-            break
-    with open("%s/extract_f0_feature.log" % (exp_dir), "r") as f:
-        log = f.read()
-    logger.info(log)
-    yield log
+    
 
 def arg_parse():
     parser = argparse.ArgumentParser(description="Process GPU configurations and settings for feature extraction.")
@@ -193,8 +183,7 @@ def arg_parse():
 
 def main():
     args = arg_parse()
-    for log in extract_f0_feature(args.gpus, args.n_p, args.f0method, args.if_f0_3, args.exp_dir, args.version19, args.gpus_rmvpe):
-        print(log)
+    extract_f0_feature(args.exp_dir, vars(args))
 
 if __name__ == "__main__":
     main()

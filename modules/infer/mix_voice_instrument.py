@@ -11,17 +11,18 @@ def arg_parse():
     args = parser.parse_args()
     return args
 
-def main(args):
+def mix_voice_and_instrument(vocal_path, instrument_path, output_path):
     # Load vocal and instrument audio
-    vocal = AudioSegment.from_file(args.vocal_path)
-    instrument = AudioSegment.from_file(args.instrument_path)
+    vocal = AudioSegment.from_file(vocal_path)
+    instrument = AudioSegment.from_file(instrument_path)
 
     # Mix audio
     mixed = vocal.overlay(instrument)
 
     # Export mixed audio to output path
-    mixed.export(args.output_path, format='wav')
+    mixed.export(output_path, format='wav')
+    return output_path
 
 if __name__ == "__main__":
     args = arg_parse()
-    main(args)
+    mix_voice_and_instrument(args)

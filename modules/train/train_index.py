@@ -31,7 +31,8 @@ i18n = I18nAuto()
 # Environmental variable
 outside_index_root = os.getenv("outside_index_root")
 
-def train_index(exp_dir, version19):
+def train_index(exp_dir, args):
+    version19 = args.get("version19", "v2")
     os.makedirs(exp_dir, exist_ok=True)
     feature_dir = os.path.join(exp_dir, "3_feature256" if version19 == "v1" else "3_feature768")
     
@@ -55,7 +56,6 @@ def train_index(exp_dir, version19):
 
     if big_npy.shape[0] > 200000:
         infos.append("Attempting kmeans on array of shape {} to 10k centers.".format(big_npy.shape[0]))
-        yield "\n".join(infos)
         try:
             kmeans = MiniBatchKMeans(n_clusters=10000, verbose=True, batch_size=256 * config.n_cpu, compute_labels=False, init="random")
             big_npy = kmeans.fit(big_npy).cluster_centers_
@@ -63,31 +63,29 @@ def train_index(exp_dir, version19):
             info = traceback.format_exc()
             logger.info(info)
             infos.append(info)
-            yield "\n".join(infos)
     
     np.save(os.path.join(exp_dir, "total_fea.npy"), big_npy)
     n_ivf = min(int(16 * np.sqrt(big_npy.shape[0])), big_npy.shape[0] // 39)
     infos.append("{},{}".format(big_npy.shape, n_ivf))
-    yield "\n".join(infos)
     
     index_description = "IVF{},Flat".format(n_ivf)
     index = faiss.index_factory(256 if version19 == "v1" else 768, index_description)
     infos.append("training")
-    yield "\n".join(infos)
     
     index_ivf = faiss.extract_index_ivf(index)
     index_ivf.nprobe = 1
     index.train(big_npy)
-    faiss.write_index(index, os.path.join(exp_dir, "trained_index.index"))
+    trained_index_path = os.path.join(exp_dir, "trained_index.index")
+    faiss.write_index(index, trained_index_path)
     infos.append("adding")
-    yield "\n".join(infos)
     
     batch_size_add = 8192
     for i in range(0, big_npy.shape[0], batch_size_add):
         index.add(big_npy[i:i + batch_size_add])
-    faiss.write_index(index, os.path.join(exp_dir, "trained_index.index"))
+    faiss.write_index(index, trained_index_path)
     infos.append("Index construction successful: trained_index.index")
-    yield "\n".join(infos)
+    # print("\n".join(infos))
+    return trained_index_path
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Train an index with specified directory and version.")
@@ -98,8 +96,8 @@ def parse_args():
 def main():
     args = parse_args()
     
-    for message in train_index(args.exp_dir, args.version19):
-        print(message)
+    result = train_index(args.exp_dir, vars(args))
+    print(result)
 
 if __name__ == "__main__":
     main()

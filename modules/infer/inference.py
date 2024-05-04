@@ -38,31 +38,37 @@ def arg_parse() -> tuple:
 
     return args
 
-def main(args):
+def rvc_inference(voice_model, voice_model_path, input_path, output_path, index_path, inference_args):
     load_dotenv()
-    config = Config()
-    config.device = args.device if args.device else config.device
-    config.is_half = args.is_half if args.is_half else config.is_half
-    vc = VC(config)
-    vc.get_vc(args.model_name)
-    _, wav_opt = vc.vc_single(
-        0,
-        args.input_path,
-        args.f0up_key,
-        None,
-        args.f0method,
-        args.index_path,
-        None,
-        args.index_rate,
-        args.filter_radius,
-        args.resample_sr,
-        args.rms_mix_rate,
-        args.protect,
-    )
-    os.makedirs(os.path.dirname(args.opt_path), exist_ok=True)
-    wavfile.write(args.opt_path, wav_opt[0], wav_opt[1])
+    f0up_key = inference_args.get('f0up_key', 0)
+    f0method = inference_args.get('f0method', "rmvpe")
+    index_rate = inference_args.get('index_rate', 0.66)
+    filter_radius = inference_args.get('filter_radius', 3)
+    resample_sr = inference_args.get('resample_sr', 0)
+    rms_mix_rate = inference_args.get('rms_mix_rate', 1)
+    protect = inference_args.get('protect', 0.33)
 
+    voice_model.get_vc(voice_model_path)
+    _, wav_opt = voice_model.vc_single(
+        0,
+        input_path,
+        f0up_key,
+        None,
+        f0method,
+        index_path,
+        None,
+        index_rate,
+        filter_radius,
+        resample_sr,
+        rms_mix_rate,
+        protect,
+    )
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    wavfile.write(output_path, wav_opt[0], wav_opt[1])
+    return output_path
 
 if __name__ == "__main__":
     args = arg_parse()
-    main(args)
+    # main(args)
+    vc = VC(Config())
+    rvc_inference(voice_model=vc, voice_model_path=args.model_name, input_path=args.input_path, output_path=args.opt_path, index_path=args.index_path, inference_args=vars(args))
