@@ -14,7 +14,6 @@ import ffmpeg
 project_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(project_path)
 
-from configs.config import Config
 from infer.modules.uvr5.mdxnet import MDXNetDereverb
 from infer.modules.uvr5.vr import AudioPre, AudioPreDeEcho
 
@@ -22,18 +21,17 @@ from infer.modules.uvr5.vr import AudioPre, AudioPreDeEcho
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)  # Adjust as necessary
 
-def initialize_voice_separation_model(model_name, agg):
-    config = Config()
+def initialize_voice_separation_model(model_name, agg, device, is_half):
     weight_root = os.getenv("weight_uvr5_root", f"{project_path}/assets/uvr5_weights")
     if model_name == "onnx_dereverb_By_FoxJoy":
-        return MDXNetDereverb(15, config.device)
+        return MDXNetDereverb(15, device)
     else:
         Cls = AudioPre if "DeEcho" not in model_name else AudioPreDeEcho
         return Cls(
             agg=int(agg),
             model_path=os.path.join(weight_root, model_name + ".pth"),
-            device=config.device,
-            is_half=config.is_half,
+            device=device,
+            is_half=is_half,
         )
 
 def uvr(model, inp_path, save_root_vocal, save_root_ins, agg, format0):
@@ -88,11 +86,14 @@ def arg_parse():
     parser.add_argument("--save_root_ins", type=str, default="/home/choi/desktop/rvc/ai/data/user2/output/music", help="Output path for instruments")
     parser.add_argument("--agg", type=int, default=10, help="Aggregation parameter")
     parser.add_argument("--format0", type=str, default="wav", help="Output audio format")
+    parser.add_argument("--device", type=str, default="cuda:0", help="Device for processing")
+    parser.add_argument("--is_half", type=bool, default=False, help="Use half precision")
     return parser.parse_args()
 
 def main():
     args = arg_parse()
-    model = initialize_voice_separation_model(args)
+    model_name, agg, device, is_half = args.model_name, args.agg, args.device, args.is_half
+    model = initialize_voice_separation_model(model_name, agg, device, is_half)
     try:
         uvr(model, args.inp_path, args.save_root_vocal, args.save_root_ins, args.agg, args.format0)
     except Exception as e:
