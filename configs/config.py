@@ -109,7 +109,7 @@ class Config:
         )
     
     def initialize_args(self):
-        self.pycmd = sys.executable or "python"
+        self.python_cmd = sys.executable or "python"
         self.port = 7865
         self.colab = False
         self.noparallel = False
