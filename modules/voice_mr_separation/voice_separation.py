@@ -39,8 +39,7 @@ def initialize_voice_separation_model(voice_separation_args):
             is_half=is_half,
         )
 
-def uvr(model, inp_path, save_root_vocal, save_root_ins, args):
-    format0 = args.get("format", "wav")
+def uvr(model, inp_path, save_root_vocal, save_root_ins, format):
     os.makedirs(save_root_vocal, exist_ok=True)
     os.makedirs(save_root_ins, exist_ok=True)
 
@@ -51,7 +50,7 @@ def uvr(model, inp_path, save_root_vocal, save_root_ins, args):
         info = ffmpeg.probe(inp_path, cmd="ffprobe")
         if info["streams"][0]["channels"] == 2 and info["streams"][0]["sample_rate"] == "44100":
             need_reformat = 0
-            vocal_path, instrument_path = model._path_audio_(inp_path, save_root_ins, save_root_vocal, format0)
+            vocal_path, instrument_path = model._path_audio_(inp_path, save_root_ins, save_root_vocal, format)
             done = 1
     except Exception as e:
         infos.append(f"Error in probing the file: {str(e)}")
@@ -63,13 +62,18 @@ def uvr(model, inp_path, save_root_vocal, save_root_ins, args):
         inp_path = tmp_path
 
     if done == 0:
-        vocal_path, instrument_path = model._path_audio_(inp_path, save_root_ins, save_root_vocal, format0)
+        vocal_path, instrument_path = model._path_audio_(inp_path, save_root_ins, save_root_vocal, format)
         infos.append(f"{os.path.basename(inp_path)}->Success")
     else:
         infos.append("No reformat needed and processing completed.")
         
     print("\n".join(infos))
-    return vocal_path, instrument_path
+    new_vocal_path = vocal_path.replace(".reformatted.wav.wav", "")
+    new_instrument_path = instrument_path.replace(".reformatted.wav.wav", "")
+    os.rename(vocal_path, new_vocal_path)
+    os.rename(instrument_path, new_instrument_path)
+
+    return new_vocal_path, new_instrument_path
 
 def clean_up(model):
     try:
